@@ -1,0 +1,19 @@
+# Local lab overlay: kind + a fake AWS (moto). The only differences from
+# production are fake static credentials (kind has no Pod Identity), a
+# 15-second refresh so you can watch rotation, and a locally built image.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - fake-aws-credentials.yaml
+patches:
+  - path: store-auth.yaml
+    target:
+      kind: ClusterSecretStore
+  - path: fast-refresh.yaml
+    target:
+      kind: ExternalSecret
+  - path: app-fake-aws.yaml
+    target:
+      kind: Deployment
+      name: transcoder

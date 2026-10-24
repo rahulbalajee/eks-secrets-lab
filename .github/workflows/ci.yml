@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: app/go.mod
+          cache-dependency-path: app/go.sum
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.15"
+
+      - name: Install kubeconform
+        run: go install github.com/yannh/kubeconform/cmd/kubeconform@v0.8.0
+
+      - name: Go, Terraform and manifests
+        run: make check
+
+  lab:
+    # The whole local lab, end to end, on a throwaway kind cluster.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Bring the lab up
+        run: ./lab/up.sh
+
+      - name: The app started with every setting
+        run: |
+          kubectl -n video logs deploy/transcoder | tee app.log
+          grep -q 'msg="transcoder starting"' app.log
+          grep -q 'aws_credentials=EnvConfigCredentials' app.log
+
+      - name: A rotated password reaches the pods
+        run: |
+          before=$(kubectl -n video get deploy/transcoder -o jsonpath='{.status.observedGeneration}')
+          WATCH=0 ./lab/rotate.sh
+          for i in $(seq 1 60); do
+            after=$(kubectl -n video get deploy/transcoder -o jsonpath='{.status.observedGeneration}')
+            [ "$after" != "$before" ] && echo "Reloader rolled the deployment after ${i}s" && exit 0
+            sleep 1
+          done
+          echo "the deployment was never rolled" && exit 1

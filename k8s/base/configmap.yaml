@@ -1,0 +1,10 @@
+# App tuning: owned by the app team, reviewed in Git, rolled out with the deploy.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: transcoder-config
+  namespace: video
+data:
+  LOG_LEVEL: info
+  WORKERS: "4"
+  FFMPEG_PRESET: medium

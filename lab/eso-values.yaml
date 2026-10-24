@@ -1,0 +1,9 @@
+# Point the External Secrets Operator at the fake AWS. On EKS you leave these
+# out and give the controller's service account a Pod Identity association.
+extraEnv:
+  - name: AWS_SSM_ENDPOINT
+    value: http://moto.fake-aws.svc.cluster.local:5000
+  - name: AWS_SECRETSMANAGER_ENDPOINT
+    value: http://moto.fake-aws.svc.cluster.local:5000
+  - name: AWS_STS_ENDPOINT
+    value: http://moto.fake-aws.svc.cluster.local:5000

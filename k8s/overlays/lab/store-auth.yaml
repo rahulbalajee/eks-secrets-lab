@@ -1,0 +1,12 @@
+- op: add
+  path: /spec/provider/aws/auth
+  value:
+    secretRef:
+      accessKeyIDSecretRef:
+        name: fake-aws-credentials
+        namespace: external-secrets
+        key: access-key
+      secretAccessKeySecretRef:
+        name: fake-aws-credentials
+        namespace: external-secrets
+        key: secret-access-key

@@ -1,0 +1,11 @@
+# A one-node cluster. Port 30500 exposes the fake AWS to your laptop so the
+# seed script can write parameters and secrets into it.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: secrets-lab
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30500
+        hostPort: 30500
+        listenAddress: 127.0.0.1

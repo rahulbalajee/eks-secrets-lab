@@ -1,0 +1,24 @@
+# A second cluster with encryption at rest for Secrets (aescbc), so you can
+# compare what etcd holds. EKS does the same with KMS v2 and AWS KMS.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: secrets-lab-encrypted
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ENCRYPTION_DIR
+        containerPath: /etc/kubernetes/encryption
+        readOnly: true
+    kubeadmConfigPatches:
+      - |
+        kind: ClusterConfiguration
+        apiServer:
+          extraArgs:
+            - name: encryption-provider-config
+              value: /etc/kubernetes/encryption/config.yaml
+          extraVolumes:
+            - name: encryption
+              hostPath: /etc/kubernetes/encryption
+              mountPath: /etc/kubernetes/encryption
+              readOnly: true
+              pathType: Directory

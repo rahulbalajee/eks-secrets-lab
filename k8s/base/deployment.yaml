@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transcoder
+  namespace: video
+  annotations:
+    # Reloader rolls the pods when a referenced ConfigMap or Secret changes.
+    # Environment variables are fixed when a container starts, so without
+    # this a rotated password only reaches the app on the next deploy.
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transcoder
+  template:
+    metadata:
+      labels:
+        app: transcoder
+    spec:
+      serviceAccountName: transcoder
+      containers:
+        - name: transcoder
+          image: transcoder:dev
+          envFrom:
+            - configMapRef:
+                name: transcoder-config
+            - secretRef:
+                name: transcoder-infra
+            - secretRef:
+                name: transcoder-secrets
+          volumeMounts:
+            # The same Secret as files. The kubelet updates these in place.
+            - name: secrets
+              mountPath: /etc/transcoder/secrets
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: secrets
+          secret:
+            secretName: transcoder-secrets

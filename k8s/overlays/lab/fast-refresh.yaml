@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/refreshInterval
+  value: 15s

@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/template/spec/containers/0/imagePullPolicy
+  value: Never
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+    - name: AWS_ENDPOINT_URL
+      value: http://moto.fake-aws.svc.cluster.local:5000
+    - name: AWS_REGION
+      value: eu-west-1
+- op: add
+  path: /spec/template/spec/containers/0/envFrom/-
+  value:
+    secretRef:
+      name: fake-aws-credentials
