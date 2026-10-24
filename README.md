@@ -36,6 +36,7 @@ kubectl -n video get externalsecret
 kubectl -n video logs deploy/transcoder
 
 ./lab/etcd.sh                # read the Secret straight out of etcd
+./lab/decode-token.sh        # the service account token IRSA would hand to STS
 ./lab/rotate.sh              # rotate the password and watch it propagate
 ./lab/encrypted.sh           # same, on a cluster with encryption at rest
 
